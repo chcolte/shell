@@ -5,8 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#define LOG 0
+#define LOG 0 // 0: hide logs, other: show logs
 
+// logger
 void logger(char* log, ...){
     if(LOG == 0){
         return;
@@ -17,7 +18,27 @@ void logger(char* log, ...){
     vprintf(log, args);
 }
 
-// read user input from standard input
+// print current directory
+void print_cr_dir(){
+    FILE* fp;
+    char* cmd = "pwd";
+    char buf[256];
+    fp = popen(cmd, "r");
+    while(fgets(buf, 256, fp)) {
+        
+        // 最後の改行文字をヌル文字に置き換える
+        int i=0;
+        while(buf[i] != '\0'){
+            if(buf[i] == '\n') buf[i] = '\0';
+            i++;
+        }
+        
+        printf("\x1b[34m%s\x1b[0m", buf);
+    }
+    pclose(fp);
+}
+
+// read input from standard input
 char* read_line(){
     char *line = NULL;
     size_t bufsize = 0;
@@ -75,7 +96,8 @@ int main(){
     int status;
 
     do {
-        printf("> ");
+        print_cr_dir();
+        printf("$ ");
         line = read_line();
         args = split_line(line);
         status = execute(args);
