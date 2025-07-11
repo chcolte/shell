@@ -20,10 +20,15 @@ void logger(char* log, ...){
 
 // print current directory
 void print_cr_dir(){
+    logger("[print_cr_dir] enter\n");
+
     FILE* fp;
     char* cmd = "pwd";
     char buf[256];
+    
     fp = popen(cmd, "r");
+    if(fp == NULL) perror("[print_cr_dir] can not open command\n");
+
     while(fgets(buf, 256, fp)) {
         
         // 最後の改行文字をヌル文字に置き換える
@@ -76,11 +81,11 @@ int execute(char **args) {
     pid = fork(); // 自身のプロセスをコピー
     if (pid == 0) { // フォークに成功
         if (execvp(args[0], args) == -1) { // 実行に失敗したとき
-            perror("exec");
+            perror("failed to exec\n");
         }
         exit(EXIT_FAILURE);
     } else if (pid < 0) { // フォークに失敗したとき
-        perror("fork");
+        perror("failed to fork\n");
     } else {
         do {
             wpid = waitpid(pid, &status, WUNTRACED);
