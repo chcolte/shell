@@ -75,13 +75,11 @@ char** split_line(char* line){
 
 // check built-in command or not
 int is_builtin_command(char** args){
-    char builtin_command[][6] = {"cd", "export"};
-    int size_of_builtin_command = 2;
-    logger("[is_builtin_command] -%s-\n", args[0]);
-    logger("[is_builtin_command] -%s-\n", builtin_command[0]);
+    char builtin_command[][6] = {"cd", "export", "exit"};
+    int size_of_builtin_command = 3;
 
     for(int i=0; i<size_of_builtin_command; i++){
-        if(strcmp(args[0], builtin_command[0]) == 0){
+        if(strcmp(args[0], builtin_command[i]) == 0){
             logger("[is_builtin_command] %s is built-in command\n", args[0]);
             return 1;
         }
@@ -100,11 +98,19 @@ int builtin_command_cd(char **args) {
     return 1;
 }
 
+int builtin_command_exit(char **args) {
+    return 0;
+}
+
 // execute built-in command
 int exec_builtin_command(char** args){
     if(strcmp(args[0], "cd") == 0){
-        builtin_command_cd(args);
+        return builtin_command_cd(args);
     }
+    if(strcmp(args[0], "exit") == 0){
+        return builtin_command_exit(args);
+    }
+    return 1;
 }
 
 // execute external command
@@ -131,9 +137,9 @@ int exec_external_command(char** args){
 // execute
 int execute(char** args) {
     if(is_builtin_command(args)){
-        exec_builtin_command(args);
+        return exec_builtin_command(args);
     }else{
-        exec_external_command(args);
+        return exec_external_command(args);
     }
 }
 
