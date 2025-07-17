@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define LOG 0 // 0: hide logs, other: show logs
+#define LOG 1 // 0: hide logs, other: show logs
 
 // logger
 void logger(char* log, ...){
@@ -73,8 +73,42 @@ char** split_line(char* line){
     return tokens;
 }
 
-// execute
-int execute(char **args) {
+// check built-in command or not
+int is_builtin_command(char** args){
+    char builtin_command[][6] = {"cd", "export"};
+    int size_of_builtin_command = 2;
+    logger("[is_builtin_command] -%s-\n", args[0]);
+    logger("[is_builtin_command] -%s-\n", builtin_command[0]);
+
+    for(int i=0; i<size_of_builtin_command; i++){
+        if(strcmp(args[0], builtin_command[0]) == 0){
+            logger("[is_builtin_command] %s is built-in command\n", args[0]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int builtin_command_cd(char **args) {
+    if (args[1] == NULL) {
+        fprintf(stderr, "expected argument to \"cd\"\n");
+    } else {
+        if (chdir(args[1]) != 0) {
+            perror("[builtin_command_cd] failed to change directory.\n");
+        }
+    }
+    return 1;
+}
+
+// execute built-in command
+int exec_builtin_command(char** args){
+    if(strcmp(args[0], "cd") == 0){
+        builtin_command_cd(args);
+    }
+}
+
+// execute external command
+int exec_external_command(char** args){
     pid_t pid, wpid;
     int status;
 
@@ -91,9 +125,18 @@ int execute(char **args) {
             wpid = waitpid(pid, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
-
     return 1;
 }
+
+// execute
+int execute(char** args) {
+    if(is_builtin_command(args)){
+        exec_builtin_command(args);
+    }else{
+        exec_external_command(args);
+    }
+}
+
 
 int main(){
     char* line;
