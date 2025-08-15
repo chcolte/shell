@@ -4,12 +4,15 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <signal.h>
 #include "./utils.c"
 #include "./built-in_command.c"
 
 #define CMDLINE_COLOR "\x1b[34m"
 #define COLOR_RESET "\x1b[0m"
+
+//現在実行中のプロセスのPID
+pid_t current_pid = -1;
 
 // print current directory
 void print_cr_dir(){
@@ -90,9 +93,11 @@ int exec_external_command(char** args){
     } else if (pid < 0) { // フォークに失敗したとき
         perror("failed to fork\n");
     } else {
+        current_pid = pid;
         do {
             wpid = waitpid(pid, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        current_pid = -1;
     }
     return 1;
 }
@@ -110,12 +115,36 @@ int execute(char** args) {
     }
 }
 
+// SIGINT handler
+void sigint_handler(int sig) {
+    printf("\n");
+    
+    // 実行中のプロセスがある場合はキル
+    if (current_pid > 0) {
+        if (kill(current_pid, SIGTERM) == 0) {
+            logger("[sigint_handler] exit process %d\n", current_pid);
+            usleep(100000);
+            if (kill(current_pid, 0) == 0) {
+                kill(current_pid, SIGKILL);
+                logger("[sigint_handler] force exit process %d\n", current_pid);
+            }
+            current_pid = -1;
+        }
+    }
+    
+    print_cr_dir();
+    printf("$ ");
+    fflush(stdout);
+}
+
 
 int main(){
     char* line;
     char** args;
     int status;
 
+    signal(SIGINT, sigint_handler);
+    
     do {
         print_cr_dir();
         printf("$ ");
