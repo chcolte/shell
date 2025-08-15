@@ -5,18 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#define LOG 1 // 0: hide logs, other: show logs
+#include "./utils.c"
+#include "./built-in_command.c"
 
-// logger
-void logger(char* log, ...){
-    if(LOG == 0){
-        return;
-    }
-    va_list args;
-    va_start(args, log);
-
-    vprintf(log, args);
-}
 
 // print current directory
 void print_cr_dir(){
@@ -62,7 +53,6 @@ char** split_line(char* line){
     if(token == NULL) {
         logger("[split_line] no token\n");
     }
-
     while (token != NULL){
         tokens[i++] = token;
         logger("[split_line] %s\n", token);
@@ -71,35 +61,6 @@ char** split_line(char* line){
     }
     tokens[i] = NULL;
     return tokens;
-}
-
-// check built-in command or not
-int is_builtin_command(char** args){
-    char builtin_command[][6] = {"cd", "export", "exit"};
-    int size_of_builtin_command = 3;
-
-    for(int i=0; i<size_of_builtin_command; i++){
-        if(strcmp(args[0], builtin_command[i]) == 0){
-            logger("[is_builtin_command] %s is built-in command\n", args[0]);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int builtin_command_cd(char **args) {
-    if (args[1] == NULL) {
-        fprintf(stderr, "expected argument to \"cd\"\n");
-    } else {
-        if (chdir(args[1]) != 0) {
-            perror("[builtin_command_cd] failed to change directory.\n");
-        }
-    }
-    return 1;
-}
-
-int builtin_command_exit(char **args) {
-    return 0;
 }
 
 // execute built-in command
@@ -136,6 +97,10 @@ int exec_external_command(char** args){
 
 // execute
 int execute(char** args) {
+    if(args == NULL){
+        return 1;
+    }
+
     if(is_builtin_command(args)){
         return exec_builtin_command(args);
     }else{
