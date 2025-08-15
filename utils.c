@@ -9,11 +9,11 @@
 
 // logger
 void logger(char* log, ...){
-    if(LOG == 0){
+    if(LOG == 0 || log == NULL){
         return;
     }
     va_list args;
     va_start(args, log);
-
     vprintf(log, args);
+    va_end(args);
 }

@@ -97,7 +97,7 @@ int exec_external_command(char** args){
 
 // execute
 int execute(char** args) {
-    if(args == NULL){
+    if(args == NULL || args[0] == NULL){
         return 1;
     }
 

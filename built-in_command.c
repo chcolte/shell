@@ -7,6 +7,10 @@
 
 // check built-in command or not
 int is_builtin_command(char** args){
+    if(args == NULL){
+        return 0;
+    }
+    
     char builtin_command[][6] = {"cd", "export", "exit"};
     int size_of_builtin_command = 3;
 
