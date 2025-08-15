@@ -8,6 +8,8 @@
 #include "./utils.c"
 #include "./built-in_command.c"
 
+#define CMDLINE_COLOR "\x1b[34m"
+#define COLOR_RESET "\x1b[0m"
 
 // print current directory
 void print_cr_dir(){
@@ -29,7 +31,7 @@ void print_cr_dir(){
             i++;
         }
         
-        printf("\x1b[34m%s\x1b[0m", buf);
+        printf(CMDLINE_COLOR "%s" COLOR_RESET, buf);
     }
     pclose(fp);
 }
