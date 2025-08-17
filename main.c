@@ -62,7 +62,7 @@ char** split_line(char* line){
         tokens[i++] = token;
         logger("[split_line] %s\n", token);
 
-        token = strtok(NULL, "\t\r\n\a");
+        token = strtok(NULL, " \t\r\n\a"); //前回分割したところから再開
     }
     tokens[i] = NULL;
     return tokens;
